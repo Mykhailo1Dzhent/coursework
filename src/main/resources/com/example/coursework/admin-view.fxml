@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.example.coursework.controllers.AdminController"
+            prefHeight="700.0" prefWidth="1000.0">
+
+    <top>
+        <VBox style="-fx-background-color: #2c3e50; -fx-padding: 15;">
+            <Label text="Admin Panel" style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" />
+        </VBox>
+    </top>
+
+    <center>
+        <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">
+
+            <!-- USERS TAB -->
+            <Tab text="Users">
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <TextField fx:id="filterUsername" promptText="Username" prefWidth="150" />
+                        <TextField fx:id="filterName" promptText="Name" prefWidth="150" />
+                        <TextField fx:id="filterSurname" promptText="Surname" prefWidth="150" />
+                        <ComboBox fx:id="filterRole" promptText="Role" prefWidth="120" />
+                        <TextField fx:id="filterEmail" promptText="Email" prefWidth="150" />
+                        <Button text="Search" onAction="#handleFilterUsers" />
+                        <Button text="Reset" onAction="#handleResetUserFilter" />
+                    </HBox>
+                    <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colUserId" text="ID" prefWidth="50" />
+                            <TableColumn fx:id="colUsername" text="Username" prefWidth="150" />
+                            <TableColumn fx:id="colRole" text="Role" prefWidth="120" />
+                            <TableColumn fx:id="colName" text="Name" prefWidth="120" />
+                            <TableColumn fx:id="colSurname" text="Surname" prefWidth="120" />
+                            <TableColumn fx:id="colEmail" text="Email" prefWidth="180" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Add User" onAction="#handleAddUser" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+                        <Button text="Edit User" onAction="#handleEditUser" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
+                        <Button text="Delete User" onAction="#handleDeleteUser" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                        <Button text="Refresh" onAction="#handleRefreshUsers" />
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- RESTAURANTS TAB -->
+            <Tab text="Restaurants">
+                <VBox spacing="10" style="-fx-padding: 15;">
+
+                    <!-- Верхняя часть: список ресторанов -->
+                    <Label text="Restaurants" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                    <TableView fx:id="restaurantsTable" prefHeight="250" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colRestId" text="ID" prefWidth="50" />
+                            <TableColumn fx:id="colRestName" text="Name" prefWidth="180" />
+                            <TableColumn fx:id="colRestCuisine" text="Cuisine" prefWidth="150" />
+                            <TableColumn fx:id="colRestOwner" text="Owner" prefWidth="150" />
+                            <TableColumn fx:id="colRestOpening" text="Opens" prefWidth="80" />
+                            <TableColumn fx:id="colRestClosing" text="Closes" prefWidth="80" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Delete Restaurant" onAction="#handleDeleteRestaurant" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                        <Button text="Refresh" onAction="#handleRefreshRestaurants" />
+                    </HBox>
+
+                    <Separator />
+
+                    <!-- Нижняя часть: блюда выбранного ресторана -->
+                    <Label fx:id="dishesLabel" text="Dishes" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                    <TableView fx:id="dishesTable" prefHeight="200" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colDishId" text="ID" prefWidth="50" />
+                            <TableColumn fx:id="colDishName" text="Name" prefWidth="180" />
+                            <TableColumn fx:id="colDishDescription" text="Description" prefWidth="250" />
+                            <TableColumn fx:id="colDishPrice" text="Price" prefWidth="100" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Add Dish" onAction="#handleAddDish" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+                        <Button text="Edit Dish" onAction="#handleEditDish" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
+                        <Button text="Delete Dish" onAction="#handleDeleteDish" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                    </HBox>
+
+                </VBox>
+            </Tab>
+
+            <!-- ORDERS TAB -->
+            <Tab text="Orders">
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    <HBox spacing="10" alignment="CENTER_LEFT">
+                        <ComboBox fx:id="filterOrderStatus" promptText="Status" prefWidth="130" />
+                        <TextField fx:id="filterOrderRestaurant" promptText="Restaurant" prefWidth="150" />
+                        <TextField fx:id="filterOrderCustomer" promptText="Customer" prefWidth="150" />
+                        <DatePicker fx:id="filterOrderDate" promptText="Date" prefWidth="150" />
+                        <Button text="Search" onAction="#handleFilterOrders" />
+                        <Button text="Reset" onAction="#handleResetOrderFilter" />
+                    </HBox>
+                    <TableView fx:id="ordersTable" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colOrderId" text="ID" prefWidth="50" />
+                            <TableColumn fx:id="colOrderCustomer" text="Customer" prefWidth="150" />
+                            <TableColumn fx:id="colOrderRestaurant" text="Restaurant" prefWidth="150" />
+                            <TableColumn fx:id="colOrderDriver" text="Driver" prefWidth="120" />
+                            <TableColumn fx:id="colOrderStatus" text="Status" prefWidth="120" />
+                            <TableColumn fx:id="colOrderTime" text="Order Time" prefWidth="150" />
+                            <TableColumn fx:id="colOrderPrice" text="Total Price" prefWidth="100" />
+                        </columns>
+                    </TableView>
+                    <HBox spacing="10">
+                        <Button text="Delete Order" onAction="#handleDeleteOrder" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                        <Button text="Refresh" onAction="#handleRefreshOrders" />
+                    </HBox>
+                </VBox>
+            </Tab>
+
+            <!-- MESSAGES TAB -->
+            <Tab text="Messages">
+                <VBox spacing="10" style="-fx-padding: 15;">
+
+                    <!-- Подвкладки -->
+                    <TabPane tabClosingPolicy="UNAVAILABLE" style="-fx-tab-min-height: 30;">
+
+                        <!-- Order Messages -->
+                        <Tab text="Order Messages">
+                            <VBox spacing="10" style="-fx-padding: 10;">
+                                <TableView fx:id="messagesTable" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="colMessageId" text="ID" prefWidth="50" />
+                                        <TableColumn fx:id="colMessageOrder" text="Order ID" prefWidth="100" />
+                                        <TableColumn fx:id="colMessageSender" text="Sender" prefWidth="150" />
+                                        <TableColumn fx:id="colMessageText" text="Message" prefWidth="300" />
+                                        <TableColumn fx:id="colMessageTime" text="Time" prefWidth="150" />
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10">
+                                    <Button text="Edit Message" onAction="#handleEditMessage" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
+                                    <Button text="Delete Message" onAction="#handleDeleteMessage" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                                    <Button text="Refresh" onAction="#handleRefreshMessages" />
+                                </HBox>
+                            </VBox>
+                        </Tab>
+
+                        <!-- Support -->
+                        <Tab text="Support">
+                            <VBox spacing="10" style="-fx-padding: 10;">
+                                <TableView fx:id="supportTable" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="colSupportId" text="ID" prefWidth="50" />
+                                        <TableColumn fx:id="colSupportUser" text="User" prefWidth="150" />
+                                        <TableColumn fx:id="colSupportMessage" text="Message" prefWidth="350" />
+                                        <TableColumn fx:id="colSupportTime" text="Time" prefWidth="150" />
+                                        <TableColumn fx:id="colSupportStatus" text="Status" prefWidth="100" />
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10">
+                                    <Button text="Reply" onAction="#handleSupportReply" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+                                    <Button text="Delete" onAction="#handleSupportDelete" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                                    <Button text="Refresh" onAction="#handleRefreshSupport" />
+                                </HBox>
+                            </VBox>
+                        </Tab>
+
+                    </TabPane>
+                </VBox>
+            </Tab>
+
+            <!-- STATISTICS TAB -->
+            <Tab text="Statistics">
+                <VBox spacing="20" style="-fx-padding: 20;" alignment="TOP_LEFT">
+
+                    <Label text="Overview" style="-fx-font-weight: bold; -fx-font-size: 16;" />
+
+                    <GridPane hgap="20" vgap="10">
+                        <Label text="Total Users:" GridPane.columnIndex="0" GridPane.rowIndex="0" style="-fx-font-weight: bold;" />
+                        <Label fx:id="statTotalUsers" text="—" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                        <Label text="Customers:" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                        <Label fx:id="statCustomers" text="—" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                        <Label text="Drivers:" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                        <Label fx:id="statDrivers" text="—" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                        <Label text="Restaurant Owners:" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                        <Label fx:id="statRestaurantOwners" text="—" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                        <Label text="Total Restaurants:" GridPane.columnIndex="0" GridPane.rowIndex="4" style="-fx-font-weight: bold;" />
+                        <Label fx:id="statRestaurants" text="—" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                        <Label text="Total Orders:" GridPane.columnIndex="0" GridPane.rowIndex="5" style="-fx-font-weight: bold;" />
+                        <Label fx:id="statTotalOrders" text="—" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                        <Label text="Completed Orders:" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                        <Label fx:id="statCompletedOrders" text="—" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                        <Label text="Pending Orders:" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                        <Label fx:id="statPendingOrders" text="—" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                    </GridPane>
+
+                    <Button text="Refresh Statistics" onAction="#handleRefreshStatistics" />
+
+                </VBox>
+            </Tab>
+
+        </TabPane>
+    </center>
+
+</BorderPane>
