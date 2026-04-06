@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.coursework.controllers.AddUserController">
+
+    <Label text="Add New User" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="8">
+        <Label text="Username:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldUsername" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <Label text="Password:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <PasswordField fx:id="fieldPassword" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <Label text="Role:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="fieldRole" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <Label text="Name:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldName" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <Label text="Surname:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldSurname" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <Label text="Email:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldEmail" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
+
+    <HBox spacing="10">
+        <Button text="Save" onAction="#handleSave" style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

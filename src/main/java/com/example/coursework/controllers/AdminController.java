@@ -5,7 +5,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
 
@@ -63,7 +67,6 @@ public class AdminController {
         loadMessages();
         loadStatistics();
 
-        // При клике на ресторан — загружаем его блюда
         restaurantsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 String restId = newVal.get(0);
@@ -74,7 +77,7 @@ public class AdminController {
         });
     }
 
-    // ==================== USERS ====================
+    // == USERS ==
 
     private void setupUsersTable() {
         colUserId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -134,7 +137,26 @@ public class AdminController {
     }
 
     @FXML private void handleRefreshUsers() { loadUsers(null, null, null, null, null); }
-    @FXML private void handleAddUser() { showInfo("Add User", "Feature coming soon."); }
+
+    @FXML private void handleAddUser() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/add_user_dialog.fxml"));
+            Parent root = loader.load();
+
+            AddUserController controller = loader.getController();
+            controller.setOnSuccess(() -> loadUsers(null, null, null, null, null));
+
+            Stage stage = new Stage();
+            stage.setTitle("Add User");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML private void handleEditUser() {
         if (usersTable.getSelectionModel().getSelectedItem() == null) { showInfo("Edit User", "Please select a user first."); return; }
         showInfo("Edit User", "Feature coming soon.");
@@ -153,7 +175,7 @@ public class AdminController {
         });
     }
 
-    // ==================== RESTAURANTS ====================
+    // == RESTAURANTS ==
 
     private void setupRestaurantsTable() {
         colRestId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -218,7 +240,30 @@ public class AdminController {
         });
     }
 
-    @FXML private void handleAddDish() { showInfo("Add Dish", "Feature coming soon."); }
+    @FXML private void handleAddDish() {
+        ObservableList<String> selectedRest = restaurantsTable.getSelectionModel().getSelectedItem();
+        if (selectedRest == null) {
+            showInfo("Add Dish", "Please select a restaurant first.");
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/example/coursework/add_dish_dialog.fxml"));
+            Parent root = loader.load();
+
+            AddDishController controller = loader.getController();
+            controller.setRestaurantId(Integer.parseInt(selectedRest.get(0)));
+            controller.setOnSuccess(() -> loadDishes(selectedRest.get(0)));
+
+            Stage stage = new Stage();
+            stage.setTitle("Add Dish");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @FXML private void handleEditDish() { showInfo("Edit Dish", "Feature coming soon."); }
 
     @FXML private void handleDeleteDish() {
@@ -235,7 +280,7 @@ public class AdminController {
         });
     }
 
-    // ==================== ORDERS ====================
+    // == ORDERS ==
 
     private void setupOrdersTable() {
         colOrderId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -295,7 +340,7 @@ public class AdminController {
         });
     }
 
-    // ==================== MESSAGES ====================
+    // == MESSAGES ==
 
     private void setupMessagesTable() {
         colMessageId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -336,7 +381,7 @@ public class AdminController {
         });
     }
 
-    // ==================== SUPPORT ====================
+    // == SUPPORT ==
 
     private void setupSupportTable() {
         colSupportId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -350,7 +395,7 @@ public class AdminController {
     @FXML private void handleSupportReply() { showInfo("Reply", "Feature coming soon."); }
     @FXML private void handleSupportDelete() { showInfo("Delete", "Feature coming soon."); }
 
-    // ==================== STATISTICS ====================
+    // == STATISTICS ==
 
     private void loadStatistics() {
         try (Connection conn = DatabaseConnection.getConnection();
@@ -387,7 +432,7 @@ public class AdminController {
 
     @FXML private void handleRefreshStatistics() { loadStatistics(); }
 
-    // ==================== HELPERS ====================
+    // == HELPERS ==
 
     private void showInfo(String title, String message) {
         new Alert(Alert.AlertType.INFORMATION, message).showAndWait();

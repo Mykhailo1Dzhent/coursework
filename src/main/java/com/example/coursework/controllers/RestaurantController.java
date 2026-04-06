@@ -6,7 +6,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
-
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
 
@@ -72,7 +76,7 @@ public class RestaurantController {
         loadStatistics();
     }
 
-    // ==================== INFO ====================
+    // == INFO ==
 
     @FXML
     public void handleRefreshInfo() { loadInfo(); }
@@ -118,7 +122,7 @@ public class RestaurantController {
         }
     }
 
-    // ==================== MENU ITEMS ====================
+    // == MENU ITEMS ==
 
     private void setupDishesTable() {
         colDishId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -145,7 +149,25 @@ public class RestaurantController {
     }
 
     @FXML private void handleRefreshDishes() { loadDishes(); }
-    @FXML private void handleAddDish() { showInfo("Add Dish", "Feature coming soon."); }
+    @FXML private void handleAddDish() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/com/example/coursework/add_dish_dialog.fxml"));
+            Parent root = loader.load();
+
+            AddDishController controller = loader.getController();
+            controller.setRestaurantId(restaurantId);
+            controller.setOnSuccess(this::loadDishes);
+
+            Stage stage = new Stage();
+            stage.setTitle("Add Dish");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @FXML private void handleEditDish() { showInfo("Edit Dish", "Feature coming soon."); }
 
     @FXML private void handleDeleteDish() {
@@ -161,7 +183,7 @@ public class RestaurantController {
         });
     }
 
-    // ==================== ORDERS ====================
+    // == ORDERS ==
 
     private void setupOrdersTable() {
         colOrderId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -210,7 +232,7 @@ public class RestaurantController {
     @FXML private void handleAcceptOrder() { showInfo("Accept Order", "Feature coming soon."); }
     @FXML private void handleChangeStatus() { showInfo("Change Status", "Feature coming soon."); }
 
-    // ==================== MESSAGES ====================
+    // == MESSAGES ==
 
     private void setupMessagesTable() {
         colMessageId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -243,7 +265,7 @@ public class RestaurantController {
 
     @FXML private void handleRefreshMessages() { loadMessages(); }
 
-    // ==================== STATISTICS ====================
+    // == STATISTICS ==
 
     private void loadStatistics() {
         if (restaurantId == -1) return;
@@ -298,7 +320,7 @@ public class RestaurantController {
 
     @FXML private void handleRefreshStatistics() { loadStatistics(); }
 
-    // ==================== HELPERS ====================
+    // == HELPERS ==
 
     private void showInfo(String title, String message) {
         new Alert(Alert.AlertType.INFORMATION, message).showAndWait();

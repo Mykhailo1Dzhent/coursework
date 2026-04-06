@@ -22,7 +22,6 @@ public class UserService {
             if (rs.next()) {
                 String hashedPassword = rs.getString("password");
 
-                // Проверяем пароль через BCrypt
                 if (BCrypt.checkpw(password, hashedPassword)) {
                     return new User(
                             rs.getInt("id"),
@@ -46,7 +45,6 @@ public class UserService {
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            // Хешируем пароль перед сохранением
             String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
             stmt.setString(1, username);
