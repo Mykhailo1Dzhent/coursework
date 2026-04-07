@@ -192,10 +192,20 @@ public class AdminController {
         ObservableList<String> selected = usersTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showInfo("Delete User", "Please select a user first."); return; }
         confirm("Delete user " + selected.get(1) + "?", () -> {
-            try (Connection conn = DatabaseConnection.getConnection();
-                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM users WHERE id = ?")) {
-                stmt.setInt(1, Integer.parseInt(selected.get(0)));
-                stmt.executeUpdate();
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                int userId = Integer.parseInt(selected.get(0));
+                for (String table : new String[]{"customers", "drivers", "restaurant_owners", "admins"}) {
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "DELETE FROM " + table + " WHERE user_id = ?")) {
+                        stmt.setInt(1, userId);
+                        stmt.executeUpdate();
+                    }
+                }
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "DELETE FROM users WHERE id = ?")) {
+                    stmt.setInt(1, userId);
+                    stmt.executeUpdate();
+                }
                 loadUsers(null, null, null, null, null);
             } catch (Exception e) { e.printStackTrace(); }
         });
@@ -249,6 +259,8 @@ public class AdminController {
         } catch (Exception e) { e.printStackTrace(); }
         dishesTable.setItems(data);
     }
+
+    @FXML private void handleAddRestaurant() { showInfo("Edit Message", "Feature coming soon."); }
 
     @FXML private void handleRefreshRestaurants() { loadRestaurants(); }
 
@@ -380,6 +392,9 @@ public class AdminController {
         filterOrderStatus.setValue(null); filterOrderRestaurant.clear(); filterOrderCustomer.clear(); filterOrderDate.setValue(null);
         loadOrders(null, null, null, null);
     }
+
+    @FXML private void handleAddOrder() { showInfo("Edit Message", "Feature coming soon."); }
+
     @FXML private void handleRefreshOrders() { loadOrders(null, null, null, null); }
 
     @FXML private void handleDeleteOrder() {
@@ -420,6 +435,7 @@ public class AdminController {
         messagesTable.setItems(data);
     }
 
+    @FXML private void handleNewMessage() { showInfo("Edit Message", "Feature coming soon."); }
     @FXML private void handleRefreshMessages() { loadMessages(); }
     @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
 

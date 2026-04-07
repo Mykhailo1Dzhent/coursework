@@ -168,7 +168,33 @@ public class RestaurantController {
             e.printStackTrace();
         }
     }
-    @FXML private void handleEditDish() { showInfo("Edit Dish", "Feature coming soon."); }
+    @FXML private void handleEditDish() {
+        ObservableList<String> selected = dishesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Edit Dish", "Please select a dish first."); return; }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/edit_dish_dialog.fxml"));
+            Parent root = loader.load();
+
+            EditDishController controller = loader.getController();
+            controller.setDish(
+                    Integer.parseInt(selected.get(0)), // id
+                    selected.get(1),                   // name
+                    selected.get(2),                   // description
+                    selected.get(3)                    // price
+            );
+            controller.setOnSuccess(() -> loadDishes());
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Dish");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML private void handleDeleteDish() {
         ObservableList<String> selected = dishesTable.getSelectionModel().getSelectedItem();
@@ -263,6 +289,9 @@ public class RestaurantController {
         messagesTable.setItems(data);
     }
 
+    @FXML private void handleNewMessage() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleDeleteMessage() {showInfo("Edit Message", "Feature coming soon."); }
     @FXML private void handleRefreshMessages() { loadMessages(); }
 
     // == STATISTICS ==

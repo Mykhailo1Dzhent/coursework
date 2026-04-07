@@ -66,6 +66,7 @@
                         </columns>
                     </TableView>
                     <HBox spacing="10">
+                        <Button text="New Restaurant" onAction="#handleAddRestaurant" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
                         <Button text="Delete Restaurant" onAction="#handleDeleteRestaurant" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
                         <Button text="Refresh" onAction="#handleRefreshRestaurants" />
                     </HBox>
@@ -114,6 +115,7 @@
                         </columns>
                     </TableView>
                     <HBox spacing="10">
+                        <Button text="New Order" onAction="#handleAddOrder" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
                         <Button text="Delete Order" onAction="#handleDeleteOrder" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
                         <Button text="Refresh" onAction="#handleRefreshOrders" />
                     </HBox>
@@ -140,6 +142,7 @@
                                     </columns>
                                 </TableView>
                                 <HBox spacing="10">
+                                    <Button text="New Message" onAction="#handleNewMessage" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
                                     <Button text="Edit Message" onAction="#handleEditMessage" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
                                     <Button text="Delete Message" onAction="#handleDeleteMessage" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
                                     <Button text="Refresh" onAction="#handleRefreshMessages" />
