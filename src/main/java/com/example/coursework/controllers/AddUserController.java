@@ -5,6 +5,7 @@ import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -56,7 +57,7 @@ public class AddUserController {
                     PreparedStatement.RETURN_GENERATED_KEYS
             );
             stmtUser.setString(1, fieldUsername.getText().trim());
-            stmtUser.setString(2, fieldPassword.getText());
+            stmtUser.setString(2, BCrypt.hashpw(fieldPassword.getText(), BCrypt.gensalt()));
             stmtUser.setString(3, role);
             stmtUser.executeUpdate();
 

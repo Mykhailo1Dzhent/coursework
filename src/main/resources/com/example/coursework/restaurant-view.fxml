@@ -14,6 +14,13 @@
             <Label style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" text="Restaurant Owner Panel" />
         </VBox>
     </top>
+    <top>
+        <HBox alignment="CENTER_LEFT" style="-fx-background-color: #990000; -fx-padding: 15;">
+            <Label text="Restaurant Owner Panel" style="-fx-text-fill: white; -fx-font-size: 20; -fx-font-weight: bold;" HBox.hgrow="ALWAYS" maxWidth="Infinity"/>
+            <Button text="Logout" onAction="#handleLogout"
+                    style="-fx-background-color: #c0392b; -fx-text-fill: white;"/>
+        </HBox>
+    </top>
 
     <center>
         <TabPane fx:id="tabPane" tabClosingPolicy="UNAVAILABLE">

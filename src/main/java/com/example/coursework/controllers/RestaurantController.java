@@ -406,4 +406,9 @@ public class RestaurantController {
                 .showAndWait()
                 .ifPresent(btn -> { if (btn == ButtonType.YES) action.run(); });
     }
+
+    @FXML private void handleLogout() {
+        Stage stage = (Stage) dishesTable.getScene().getWindow();
+        LogoutHelper.logout(stage);
+    }
 }

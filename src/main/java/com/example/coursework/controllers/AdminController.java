@@ -198,18 +198,30 @@ public class AdminController {
         confirm("Delete user " + selected.get(1) + "?", () -> {
             try (Connection conn = DatabaseConnection.getConnection()) {
                 int userId = Integer.parseInt(selected.get(0));
+
+                PreparedStatement stmt;
+
+                stmt = conn.prepareStatement(
+                        "DELETE mi FROM menu_items mi " +
+                                "JOIN restaurants r ON mi.restaurant_id = r.id " +
+                                "WHERE r.user_id = ?");
+                stmt.setInt(1, userId);
+                stmt.executeUpdate();
+
+                stmt = conn.prepareStatement("DELETE FROM restaurants WHERE user_id = ?");
+                stmt.setInt(1, userId);
+                stmt.executeUpdate();
+
                 for (String table : new String[]{"customers", "drivers", "restaurant_owners", "admins"}) {
-                    try (PreparedStatement stmt = conn.prepareStatement(
-                            "DELETE FROM " + table + " WHERE user_id = ?")) {
-                        stmt.setInt(1, userId);
-                        stmt.executeUpdate();
-                    }
-                }
-                try (PreparedStatement stmt = conn.prepareStatement(
-                        "DELETE FROM users WHERE id = ?")) {
+                    stmt = conn.prepareStatement("DELETE FROM " + table + " WHERE user_id = ?");
                     stmt.setInt(1, userId);
                     stmt.executeUpdate();
                 }
+
+                stmt = conn.prepareStatement("DELETE FROM users WHERE id = ?");
+                stmt.setInt(1, userId);
+                stmt.executeUpdate();
+
                 loadUsers(null, null, null, null, null);
             } catch (Exception e) { e.printStackTrace(); }
         });
@@ -657,5 +669,10 @@ public class AdminController {
         new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO)
                 .showAndWait()
                 .ifPresent(btn -> { if (btn == ButtonType.YES) action.run(); });
+    }
+
+    @FXML private void handleLogout() {
+        Stage stage = (Stage) tabPane.getScene().getWindow();
+        LogoutHelper.logout(stage);
     }
 }
