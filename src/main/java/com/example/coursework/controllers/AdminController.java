@@ -260,7 +260,24 @@ public class AdminController {
         dishesTable.setItems(data);
     }
 
-    @FXML private void handleAddRestaurant() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleAddRestaurant() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/create_restaurant_dialog.fxml"));
+            Parent root = loader.load();
+
+            CreateRestaurantController controller = loader.getController();
+            controller.setOnSuccess(() -> loadRestaurants());
+
+            Stage stage = new Stage();
+            stage.setTitle("Create Restaurant");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML private void handleRefreshRestaurants() { loadRestaurants(); }
 
