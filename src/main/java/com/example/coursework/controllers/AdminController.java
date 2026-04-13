@@ -41,6 +41,8 @@ public class AdminController {
     // ---- MESSAGES ----
     @FXML private TableView<ObservableList<String>> messagesTable;
     @FXML private TableColumn<ObservableList<String>, String> colMessageId, colMessageOrder, colMessageSender, colMessageText, colMessageTime;
+    @FXML private TableView<ObservableList<String>> notificationsTable;
+    @FXML private TableColumn<ObservableList<String>, String> colNotifId, colNotifRecipient, colNotifTitle, colNotifMessage, colNotifTime, colNotifRead;
 
     // ---- SUPPORT ----
     @FXML private TableView<ObservableList<String>> supportTable;
@@ -61,6 +63,8 @@ public class AdminController {
         setupOrdersTable();
         setupMessagesTable();
         setupSupportTable();
+        setupNotificationsTable();
+        loadNotifications();
 
         loadUsers(null, null, null, null, null);
         loadRestaurants();
@@ -279,6 +283,36 @@ public class AdminController {
         }
     }
 
+    @FXML private void handleEditRestaurant() {
+        ObservableList<String> selected = restaurantsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Edit Restaurant", "Please select a restaurant first."); return; }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/edit_restaurant_dialog.fxml"));
+            Parent root = loader.load();
+
+            EditRestaurantController controller = loader.getController();
+            controller.setRestaurant(
+                    Integer.parseInt(selected.get(0)), // id
+                    selected.get(1),                   // name
+                    selected.get(2),                   // cuisine
+                    selected.get(4),                   // opening
+                    selected.get(5)                    // closing
+            );
+            controller.setCurrentOwner(selected.get(3)); // owner username
+            controller.setOnSuccess(this::loadRestaurants);
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Restaurant");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @FXML private void handleRefreshRestaurants() { loadRestaurants(); }
 
     @FXML private void handleDeleteRestaurant() {
@@ -452,7 +486,28 @@ public class AdminController {
         messagesTable.setItems(data);
     }
 
-    @FXML private void handleNewMessage() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleNewMessage() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/new_message_dialog.fxml"));
+            Parent root = loader.load();
+
+            NewMessageController controller = loader.getController();
+            controller.setOnSuccess(this::loadMessages);
+
+            Stage stage = new Stage();
+            stage.setTitle("New Message");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+            controller.setOnSuccess(() -> {
+                loadMessages();
+                loadNotifications();
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @FXML private void handleRefreshMessages() { loadMessages(); }
     @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
 
@@ -465,6 +520,78 @@ public class AdminController {
                 stmt.setInt(1, Integer.parseInt(selected.get(0)));
                 stmt.executeUpdate();
                 loadMessages();
+            } catch (Exception e) { e.printStackTrace(); }
+        });
+    }
+
+    private void setupNotificationsTable() {
+        colNotifId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
+        colNotifRecipient.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(1)));
+        colNotifTitle.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
+        colNotifMessage.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
+        colNotifTime.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
+        colNotifRead.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(5)));
+    }
+
+    private void loadNotifications() {
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        String sql = "SELECT n.id, " +
+                "CASE WHEN n.recipient_type IS NOT NULL THEN n.recipient_type " +
+                "ELSE u.username END as recipient, " +
+                "n.title, n.message, n.sent_at, " +
+                "CASE WHEN n.is_read THEN 'Yes' ELSE 'No' END " +
+                "FROM admin_notifications n LEFT JOIN users u ON n.recipient_id = u.id " +
+                "ORDER BY n.sent_at DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                ObservableList<String> row = FXCollections.observableArrayList();
+                for (int i = 1; i <= 6; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
+                data.add(row);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        notificationsTable.setItems(data);
+    }
+
+    @FXML private void handleEditNotification() {
+        ObservableList<String> selected = notificationsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Edit", "Please select a notification first."); return; }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/edit_notification_dialog.fxml"));
+            Parent root = loader.load();
+
+            EditNotificationController controller = loader.getController();
+            controller.setNotification(
+                    Integer.parseInt(selected.get(0)), // id
+                    selected.get(2),                   // title
+                    selected.get(3)                    // message
+            );
+            controller.setOnSuccess(this::loadNotifications);
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Notification");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML private void handleRefreshNotifications() { loadNotifications(); }
+
+    @FXML private void handleDeleteNotification() {
+        ObservableList<String> selected = notificationsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Delete", "Please select a notification first."); return; }
+        confirm("Delete notification #" + selected.get(0) + "?", () -> {
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM admin_notifications WHERE id = ?")) {
+                stmt.setInt(1, Integer.parseInt(selected.get(0)));
+                stmt.executeUpdate();
+                loadNotifications();
             } catch (Exception e) { e.printStackTrace(); }
         });
     }

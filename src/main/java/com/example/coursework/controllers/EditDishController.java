@@ -21,7 +21,6 @@ public class EditDishController {
         this.onSuccess = callback;
     }
 
-    // Вызывается из AdminController — заполняет поля данными выбранного блюда
     public void setDish(int id, String name, String description, String price) {
         this.dishId = id;
         fieldName.setText(name);

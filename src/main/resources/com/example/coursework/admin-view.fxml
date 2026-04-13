@@ -67,6 +67,7 @@
                     </TableView>
                     <HBox spacing="10">
                         <Button text="New Restaurant" onAction="#handleAddRestaurant" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
+                        <Button text="Edit Restaurant Info" onAction="#handleEditRestaurant" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
                         <Button text="Delete Restaurant" onAction="#handleDeleteRestaurant" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
                         <Button text="Refresh" onAction="#handleRefreshRestaurants" />
                     </HBox>
@@ -166,6 +167,26 @@
                                     <Button text="Reply" onAction="#handleSupportReply" style="-fx-background-color: #27ae60; -fx-text-fill: white;" />
                                     <Button text="Delete" onAction="#handleSupportDelete" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
                                     <Button text="Refresh" onAction="#handleRefreshSupport" />
+                                </HBox>
+                            </VBox>
+                        </Tab>
+
+                        <Tab text="Admin Notifications">
+                            <VBox spacing="10" style="-fx-padding: 10;">
+                                <TableView fx:id="notificationsTable" VBox.vgrow="ALWAYS">
+                                    <columns>
+                                        <TableColumn fx:id="colNotifId" text="ID" prefWidth="50" />
+                                        <TableColumn fx:id="colNotifRecipient" text="Recipient" prefWidth="150" />
+                                        <TableColumn fx:id="colNotifTitle" text="Title" prefWidth="150" />
+                                        <TableColumn fx:id="colNotifMessage" text="Message" prefWidth="300" />
+                                        <TableColumn fx:id="colNotifTime" text="Time" prefWidth="150" />
+                                        <TableColumn fx:id="colNotifRead" text="Read" prefWidth="60" />
+                                    </columns>
+                                </TableView>
+                                <HBox spacing="10">
+                                    <Button text="Edit" onAction="#handleEditNotification" style="-fx-background-color: #2980b9; -fx-text-fill: white;" />
+                                    <Button text="Delete" onAction="#handleDeleteNotification" style="-fx-background-color: #e74c3c; -fx-text-fill: white;" />
+                                    <Button text="Refresh" onAction="#handleRefreshNotifications" />
                                 </HBox>
                             </VBox>
                         </Tab>

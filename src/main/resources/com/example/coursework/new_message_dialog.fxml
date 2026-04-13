@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.coursework.controllers.NewMessageController">
+
+    <Label text="New Message" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="8">
+        <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldTitle" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="220"/>
+
+        <Label text="Message:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextArea fx:id="fieldMessage" GridPane.rowIndex="1" GridPane.columnIndex="1"
+                  prefWidth="220" prefHeight="80" wrapText="true"/>
+
+        <Label text="Recipient:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <VBox GridPane.rowIndex="2" GridPane.columnIndex="1" spacing="6">
+            <ComboBox fx:id="fieldGroup" prefWidth="220"
+                      promptText="— Select group or search user —"/>
+            <TextField fx:id="fieldSearch" promptText="Search user by username..." prefWidth="220"/>
+            <ListView fx:id="searchResults" prefWidth="220" prefHeight="100"/>
+        </VBox>
+    </GridPane>
+
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
+    <Label fx:id="recipientLabel" style="-fx-text-fill: green;"/>
+
+    <HBox spacing="10">
+        <Button text="Send" onAction="#handleSave"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white;"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

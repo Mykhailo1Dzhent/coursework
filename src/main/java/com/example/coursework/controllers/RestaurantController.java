@@ -38,6 +38,10 @@ public class RestaurantController {
     @FXML private TableView<ObservableList<String>> messagesTable;
     @FXML private TableColumn<ObservableList<String>, String> colMessageId, colMessageOrder, colMessageSender, colMessageText, colMessageTime;
 
+    @FXML private TableView<ObservableList<String>> notificationsTable;
+    @FXML private TableColumn<ObservableList<String>, String> colNotifId, colNotifTitle, colNotifMessage, colNotifTime, colNotifRead;
+
+
     // ---- STATISTICS ----
     @FXML private Label statTotalOrders, statCompletedOrders, statPendingOrders;
     @FXML private Label statRevenue, statAvgOrder, statMenuItems, statPopularDish;
@@ -68,7 +72,8 @@ public class RestaurantController {
         setupDishesTable();
         setupOrdersTable();
         setupMessagesTable();
-
+        setupNotificationsTable();
+        loadNotifications();
         loadInfo();
         loadDishes();
         loadOrders(null, null, null);
@@ -293,6 +298,47 @@ public class RestaurantController {
     @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
     @FXML private void handleDeleteMessage() {showInfo("Edit Message", "Feature coming soon."); }
     @FXML private void handleRefreshMessages() { loadMessages(); }
+    private void setupNotificationsTable() {
+        colNotifId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
+        colNotifTitle.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(1)));
+        colNotifMessage.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
+        colNotifTime.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
+        colNotifRead.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
+    }
+
+    private void loadNotifications() {
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        String sql = "SELECT id, title, message, sent_at, " +
+                "CASE WHEN is_read THEN 'Yes' ELSE 'No' END " +
+                "FROM admin_notifications " +
+                "WHERE recipient_id = ? OR recipient_type = 'ALL_RESTAURANTS' " +
+                "ORDER BY sent_at DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, currentUser.getId());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ObservableList<String> row = FXCollections.observableArrayList();
+                for (int i = 1; i <= 5; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
+                data.add(row);
+            }
+        } catch (Exception e) { e.printStackTrace(); }
+        notificationsTable.setItems(data);
+    }
+
+    @FXML private void handleRefreshNotifications() { loadNotifications(); }
+
+    @FXML private void handleMarkAsRead() {
+        ObservableList<String> selected = notificationsTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Mark as Read", "Please select a notification first."); return; }
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(
+                     "UPDATE admin_notifications SET is_read = TRUE WHERE id = ?")) {
+            stmt.setInt(1, Integer.parseInt(selected.get(0)));
+            stmt.executeUpdate();
+            loadNotifications();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
     // == STATISTICS ==
 

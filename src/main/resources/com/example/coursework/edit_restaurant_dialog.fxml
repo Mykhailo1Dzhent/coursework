@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.coursework.controllers.EditRestaurantController">
+    <Label text="Edit Restaurant Info" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
+    <GridPane hgap="10" vgap="8">
+        <Label text="Owner (username):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="fieldOwner" GridPane.rowIndex="0" GridPane.columnIndex="1" prefWidth="220"/>
+        <Label text="Restaurant Name:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldName" GridPane.rowIndex="1" GridPane.columnIndex="1" prefWidth="220"/>
+        <Label text="Cuisine Type:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldCuisine" promptText="e.g. Italian, Japanese" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+        <Label text="Opening Time:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldOpening" promptText="e.g. 09:00" GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+        <Label text="Closing Time:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <TextField fx:id="fieldClosing" promptText="e.g. 22:00" GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+    </GridPane>
+    <Label fx:id="errorLabel" style="-fx-text-fill: red;"/>
+    <HBox spacing="10">
+        <Button text="Save" onAction="#handleSave" style="-fx-background-color: #27ae60; -fx-text-fill: white;"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>
