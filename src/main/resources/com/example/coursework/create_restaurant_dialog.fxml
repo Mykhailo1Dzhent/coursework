@@ -2,7 +2,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.coursework.controllers.CreateRestaurantController">
+      fx:controller="com.example.coursework.controllers.admins.CreateRestaurantController">
     <Label text="Create Restaurant" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
     <GridPane hgap="10" vgap="8">
         <Label text="Owner (username):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>

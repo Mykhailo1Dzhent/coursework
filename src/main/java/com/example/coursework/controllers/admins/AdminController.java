@@ -1,5 +1,9 @@
-package com.example.coursework.controllers;
+package com.example.coursework.controllers.admins;
 
+import com.example.coursework.controllers.LogoutHelper;
+import com.example.coursework.controllers.general.AddDishController;
+import com.example.coursework.controllers.general.EditDishController;
+import com.example.coursework.controllers.general.EditRestaurantController;
 import com.example.coursework.databases.DatabaseConnection;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -12,7 +16,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
-import javafx.scene.Parent;
 
 public class AdminController {
 

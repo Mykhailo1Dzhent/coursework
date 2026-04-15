@@ -1,4 +1,4 @@
-package com.example.coursework.controllers;
+package com.example.coursework.controllers.general;
 
 import com.example.coursework.databases.DatabaseConnection;
 import javafx.fxml.FXML;
@@ -8,21 +8,24 @@ import javafx.stage.Stage;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
-public class AddDishController {
+public class EditDishController {
 
     @FXML private TextField fieldName, fieldPrice;
     @FXML private TextArea fieldDescription;
     @FXML private Label errorLabel;
 
-    private int restaurantId;
+    private int dishId;
     private Runnable onSuccess;
-
-    public void setRestaurantId(int id) {
-        this.restaurantId = id;
-    }
 
     public void setOnSuccess(Runnable callback) {
         this.onSuccess = callback;
+    }
+
+    public void setDish(int id, String name, String description, String price) {
+        this.dishId = id;
+        fieldName.setText(name);
+        fieldDescription.setText(description);
+        fieldPrice.setText(price);
     }
 
     @FXML
@@ -47,12 +50,12 @@ public class AddDishController {
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO menu_items (restaurant_id, name, describtion, price) VALUES (?, ?, ?, ?)"
+                     "UPDATE menu_items SET name = ?, describtion = ?, price = ? WHERE id = ?"
              )) {
-            stmt.setInt(1, restaurantId);
-            stmt.setString(2, fieldName.getText().trim());
-            stmt.setString(3, fieldDescription.getText().trim());
-            stmt.setDouble(4, price);
+            stmt.setString(1, fieldName.getText().trim());
+            stmt.setString(2, fieldDescription.getText().trim());
+            stmt.setDouble(3, price);
+            stmt.setInt(4, dishId);
             stmt.executeUpdate();
 
             if (onSuccess != null) onSuccess.run();

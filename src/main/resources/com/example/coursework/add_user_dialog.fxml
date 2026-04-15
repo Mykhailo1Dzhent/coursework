@@ -3,7 +3,7 @@
 <?import javafx.scene.layout.*?>
 
 <VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.example.coursework.controllers.AddUserController">
+      fx:controller="com.example.coursework.controllers.admins.AddUserController">
 
     <Label text="Add New User" style="-fx-font-size: 16; -fx-font-weight: bold;"/>
 

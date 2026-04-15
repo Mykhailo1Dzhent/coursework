@@ -1,5 +1,6 @@
 package com.example.coursework.controllers;
 
+import com.example.coursework.controllers.restaurants.RestaurantController;
 import com.example.coursework.models.User;
 import com.example.coursework.services.UserService;
 import javafx.fxml.FXML;

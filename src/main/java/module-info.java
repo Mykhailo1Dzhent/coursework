@@ -18,4 +18,10 @@ module com.example.coursework {
     exports com.example.coursework;
     exports com.example.coursework.controllers;
     opens com.example.coursework.controllers to javafx.fxml;
+    exports com.example.coursework.controllers.restaurants;
+    opens com.example.coursework.controllers.restaurants to javafx.fxml;
+    exports com.example.coursework.controllers.admins;
+    opens com.example.coursework.controllers.admins to javafx.fxml;
+    exports com.example.coursework.controllers.general;
+    opens com.example.coursework.controllers.general to javafx.fxml;
 }

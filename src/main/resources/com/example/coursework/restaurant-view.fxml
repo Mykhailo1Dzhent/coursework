@@ -7,7 +7,7 @@
 <BorderPane prefHeight="700.0" prefWidth="1000.0"
             xmlns="http://javafx.com/javafx/25"
             xmlns:fx="http://javafx.com/fxml/1"
-            fx:controller="com.example.coursework.controllers.RestaurantController">
+            fx:controller="com.example.coursework.controllers.restaurants.RestaurantController">
 
     <top>
         <VBox style="-fx-background-color: #990000; -fx-padding: 15;">

@@ -1,5 +1,8 @@
-package com.example.coursework.controllers;
+package com.example.coursework.controllers.restaurants;
 
+import com.example.coursework.controllers.*;
+import com.example.coursework.controllers.general.AddDishController;
+import com.example.coursework.controllers.general.EditDishController;
 import com.example.coursework.databases.DatabaseConnection;
 import com.example.coursework.models.User;
 import javafx.collections.FXCollections;

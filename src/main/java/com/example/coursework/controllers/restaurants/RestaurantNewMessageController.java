@@ -1,4 +1,4 @@
-package com.example.coursework.controllers;
+package com.example.coursework.controllers.restaurants;
 
 import com.example.coursework.databases.DatabaseConnection;
 import javafx.collections.FXCollections;

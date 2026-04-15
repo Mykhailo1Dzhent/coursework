@@ -1,4 +1,4 @@
-package com.example.coursework.controllers;
+package com.example.coursework.controllers.admins;
 
 import com.example.coursework.databases.DatabaseConnection;
 import javafx.fxml.FXML;
