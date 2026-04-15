@@ -294,9 +294,72 @@ public class RestaurantController {
         messagesTable.setItems(data);
     }
 
-    @FXML private void handleNewMessage() { showInfo("Edit Message", "Feature coming soon."); }
-    @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
-    @FXML private void handleDeleteMessage() {showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleNewMessage() {
+        if (restaurantId == -1) return;
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/com/example/coursework/restaurant_new_message_dialog.fxml"));
+            Parent root = loader.load();
+
+            RestaurantNewMessageController controller = loader.getController();
+            controller.setContext(restaurantId, currentUser.getId());
+            controller.setOnSuccess(this::loadMessages);
+
+            Stage stage = new Stage();
+            stage.setTitle("New Message");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML private void handleEditMessage() {
+        ObservableList<String> selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Edit Message", "Please select a message first."); return; }
+
+        int messageId = Integer.parseInt(selected.get(0));
+        int orderId   = Integer.parseInt(selected.get(1));
+        String text   = selected.get(3);
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/com/example/coursework/restaurant_edit_message_dialog.fxml"));
+            Parent root = loader.load();
+
+            RestaurantEditMessageController controller = loader.getController();
+            controller.setMessage(messageId, orderId, text, currentUser.getId());
+            controller.setOnSuccess(this::loadMessages);
+
+            Stage stage = new Stage();
+            stage.setTitle("Edit Message");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML private void handleDeleteMessage() {
+        ObservableList<String> selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Delete Message", "Please select a message first."); return; }
+
+        int messageId = Integer.parseInt(selected.get(0));
+        confirm("Delete this message?", () -> {
+            // Удаляем только своё сообщение
+            String sql = "DELETE FROM messages WHERE id = ? AND sender_id = ?";
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(sql)) {
+                stmt.setInt(1, messageId);
+                stmt.setInt(2, currentUser.getId());
+                int deleted = stmt.executeUpdate();
+                if (deleted == 0) showInfo("Delete Message", "You can only delete your own messages.");
+                loadMessages();
+            } catch (Exception e) { e.printStackTrace(); }
+        });
+    }
     @FXML private void handleRefreshMessages() { loadMessages(); }
     private void setupNotificationsTable() {
         colNotifId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
