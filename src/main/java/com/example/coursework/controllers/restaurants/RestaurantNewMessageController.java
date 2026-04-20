@@ -7,6 +7,7 @@ import javafx.scene.control.*;
 import javafx.stage.Stage;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -67,12 +68,15 @@ public class RestaurantNewMessageController {
 
         int orderId = orderMap.get(selectedLabel);
 
-        String sql = "INSERT INTO messages (order_id, sender_id, message) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO messages (order_id, sender_id, message, text, sent_at) VALUES (?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);
             stmt.setInt(2, senderId);
-            stmt.setString(3, fieldMessage.getText().trim());
+            String body = fieldMessage.getText().trim();
+            stmt.setString(3, body);
+            stmt.setString(4, body);
+            stmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
             stmt.executeUpdate();
 
             if (onSuccess != null) onSuccess.run();

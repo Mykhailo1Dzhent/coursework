@@ -16,6 +16,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public class RestaurantController {
 
@@ -263,8 +264,94 @@ public class RestaurantController {
         loadOrders(null, null, null);
     }
     @FXML private void handleRefreshOrders() { loadOrders(null, null, null); }
-    @FXML private void handleAcceptOrder() { showInfo("Accept Order", "Feature coming soon."); }
-    @FXML private void handleChangeStatus() { showInfo("Change Status", "Feature coming soon."); }
+    @FXML private void handleAcceptOrder() {
+        ObservableList<String> selected = ordersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Accept Order", "Please select an order first."); return; }
+        int orderId = Integer.parseInt(selected.get(0));
+        String currentStatus = selected.get(3);
+
+        if (!"PENDING".equalsIgnoreCase(currentStatus)) {
+            showInfo("Accept Order", "Only PENDING orders can be accepted.");
+            return;
+        }
+
+        confirm("Accept order #" + orderId + "?", () -> {
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                // Update status only if it's still PENDING and belongs to this restaurant
+                try (PreparedStatement stmt = conn.prepareStatement(
+                        "UPDATE orders SET status = 'ACCEPTED' WHERE id = ? AND restaurant_id = ? AND status = 'PENDING'")) {
+                    stmt.setInt(1, orderId);
+                    stmt.setInt(2, restaurantId);
+                    int updated = stmt.executeUpdate();
+                    if (updated == 0) {
+                        showInfo("Accept Order", "Order could not be accepted (maybe already updated).");
+                        return;
+                    }
+                }
+
+                insertSystemMessage(conn, orderId, "✅ Restaurant accepted the order. Cooking started.");
+                loadOrders(null, null, null);
+                loadMessages();
+                loadStatistics();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showInfo("Accept Order", "Error accepting order: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML private void handleChangeStatus() {
+        ObservableList<String> selected = ordersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) { showInfo("Change Status", "Please select an order first."); return; }
+
+        int orderId = Integer.parseInt(selected.get(0));
+        String currentStatus = selected.get(3);
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(
+                "READY",
+                "READY", "CANCELLED"
+        );
+        dialog.setTitle("Change Order Status");
+        dialog.setHeaderText("Order #" + orderId + " (current: " + currentStatus + ")");
+        dialog.setContentText("Select action:");
+
+        dialog.showAndWait().ifPresent(choice -> {
+            try (Connection conn = DatabaseConnection.getConnection()) {
+                if ("READY".equals(choice)) {
+                    // Keep status ACCEPTED, but allow a restaurant to confirm cooking is finished
+                    // Only meaningful if order was accepted and not yet in delivery/completed.
+                    if (!"ACCEPTED".equalsIgnoreCase(currentStatus)) {
+                        showInfo("Ready", "Order must be ACCEPTED before marking it ready.");
+                        return;
+                    }
+                    insertSystemMessage(conn, orderId, "🍳 Order is ready for pickup.");
+                } else if ("CANCELLED".equals(choice)) {
+                    if ("COMPLETED".equalsIgnoreCase(currentStatus)) {
+                        showInfo("Cancel", "Completed orders cannot be cancelled.");
+                        return;
+                    }
+                    if ("IN_DELIVERY".equalsIgnoreCase(currentStatus)) {
+                        showInfo("Cancel", "Orders in delivery cannot be cancelled.");
+                        return;
+                    }
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "UPDATE orders SET status = 'CANCELLED' WHERE id = ? AND restaurant_id = ?")) {
+                        stmt.setInt(1, orderId);
+                        stmt.setInt(2, restaurantId);
+                        stmt.executeUpdate();
+                    }
+                    insertSystemMessage(conn, orderId, "❌ Restaurant cancelled the order.");
+                }
+
+                loadOrders(null, null, null);
+                loadMessages();
+                loadStatistics();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showInfo("Change Status", "Error: " + e.getMessage());
+            }
+        });
+    }
 
     // == MESSAGES ==
 
@@ -471,6 +558,20 @@ public class RestaurantController {
         new Alert(Alert.AlertType.CONFIRMATION, message, ButtonType.YES, ButtonType.NO)
                 .showAndWait()
                 .ifPresent(btn -> { if (btn == ButtonType.YES) action.run(); });
+    }
+
+    private void insertSystemMessage(Connection conn, int orderId, String message) throws SQLException {
+        // Uses same schema as the desktop messaging: messages(order_id, sender_id, message[, sent_at])
+        // Some DB schemas also have a NOT NULL `text` column (legacy). Fill it too.
+        String sql = "INSERT INTO messages (order_id, sender_id, message, text, sent_at) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, orderId);
+            stmt.setInt(2, currentUser.getId());
+            stmt.setString(3, message);
+            stmt.setString(4, message);
+            stmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+            stmt.executeUpdate();
+        }
     }
 
     @FXML private void handleLogout() {
