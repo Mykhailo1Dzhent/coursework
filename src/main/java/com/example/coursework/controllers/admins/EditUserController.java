@@ -31,7 +31,6 @@ public class EditUserController {
         this.onSuccess = callback;
     }
 
-    // Вызывается из AdminController — заполняет поля данными выбранного пользователя
     public void setUser(int id, String username, String role, String name, String surname, String email) {
         this.userId = id;
         this.originalRole = role;
@@ -63,8 +62,6 @@ public class EditUserController {
         String email = fieldEmail.getText().trim();
 
         try (Connection conn = DatabaseConnection.getConnection()) {
-
-            // Обновляем users
             PreparedStatement stmtUser = conn.prepareStatement(
                     "UPDATE users SET username = ?, role = ? WHERE id = ?"
             );
@@ -73,13 +70,11 @@ public class EditUserController {
             stmtUser.setInt(3, userId);
             stmtUser.executeUpdate();
 
-            // Если роль изменилась — удаляем старую запись из подтаблицы
             if (!newRole.equals(originalRole)) {
                 String oldTable = getRoleTable(originalRole);
                 if (oldTable != null) {
                     conn.prepareStatement("DELETE FROM " + oldTable + " WHERE user_id = " + userId).executeUpdate();
                 }
-                // Создаём новую запись в новой подтаблице
                 String newTable = getRoleTable(newRole);
                 if (newTable != null) {
                     PreparedStatement stmt = conn.prepareStatement(
@@ -92,10 +87,8 @@ public class EditUserController {
                     stmt.executeUpdate();
                 }
             } else {
-                // Роль не изменилась — просто обновляем данные в подтаблице
                 String table = getRoleTable(newRole);
                 if (table != null) {
-                    // Проверяем есть ли уже запись
                     ResultSet rs = conn.prepareStatement(
                             "SELECT id FROM " + table + " WHERE user_id = " + userId
                     ).executeQuery();

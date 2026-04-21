@@ -21,7 +21,6 @@ public class RestaurantNewMessageController {
     private int senderId;
     private Runnable onSuccess;
 
-    // Отображаемая строка -> order_id
     private final Map<String, Integer> orderMap = new LinkedHashMap<>();
 
     public void setContext(int restaurantId, int senderId) {

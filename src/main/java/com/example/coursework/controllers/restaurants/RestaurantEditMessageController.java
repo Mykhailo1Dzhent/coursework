@@ -21,12 +21,6 @@ public class RestaurantEditMessageController {
         this.onSuccess = callback;
     }
 
-    /**
-     * @param messageId  ID записи в таблице messages
-     * @param orderId    для отображения
-     * @param currentText текущий текст сообщения
-     * @param senderId   ID текущего пользователя (для проверки авторства)
-     */
     public void setMessage(int messageId, int orderId, String currentText, int senderId) {
         this.messageId = messageId;
         this.senderId = senderId;
@@ -41,13 +35,14 @@ public class RestaurantEditMessageController {
             return;
         }
 
-        // Обновляем только если это сообщение принадлежит текущему пользователю
-        String sql = "UPDATE messages SET message = ? WHERE id = ? AND sender_id = ?";
+        String sql = "UPDATE messages SET message = ?, text = ? WHERE id = ? AND sender_id = ?";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, fieldMessage.getText().trim());
-            stmt.setInt(2, messageId);
-            stmt.setInt(3, senderId);
+            String trimmed = fieldMessage.getText().trim();
+            stmt.setString(1, trimmed);
+            stmt.setString(2, trimmed);
+            stmt.setInt(3, messageId);
+            stmt.setInt(4, senderId);
             int updated = stmt.executeUpdate();
 
             if (updated == 0) {

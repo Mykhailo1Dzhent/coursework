@@ -19,7 +19,6 @@ public class EditRestaurantController {
     private int restaurantId;
     private Runnable onSuccess;
 
-    // username -> user_id
     private Map<String, Integer> ownerMap = new HashMap<>();
 
     public void setOnSuccess(Runnable callback) {
@@ -35,7 +34,6 @@ public class EditRestaurantController {
         loadOwners();
     }
 
-    // Отдельный метод чтобы выбрать текущего владельца после загрузки
     public void setCurrentOwner(String ownerUsername) {
         fieldOwner.setValue(ownerUsername);
     }

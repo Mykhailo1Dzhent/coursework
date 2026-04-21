@@ -92,12 +92,14 @@
                             <TableColumn fx:id="colOrderDriver" prefWidth="120" text="Driver" />
                             <TableColumn fx:id="colOrderStatus" prefWidth="120" text="Status" />
                             <TableColumn fx:id="colOrderTime" prefWidth="150" text="Order Time" />
+                            <TableColumn fx:id="colOrderItems" prefWidth="360" text="Ordered items" />
                             <TableColumn fx:id="colOrderPrice" prefWidth="100" text="Total Price" />
                         </columns>
                     </TableView>
                     <HBox spacing="10">
                         <Button onAction="#handleAcceptOrder" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Accept Order" />
                         <Button onAction="#handleChangeStatus" style="-fx-background-color: #2980b9; -fx-text-fill: white;" text="Change Status" />
+                        <Button onAction="#handleEditOrderItems" style="-fx-background-color: #8e44ad; -fx-text-fill: white;" text="Order items / price" />
                         <Button onAction="#handleRefreshOrders" text="Refresh" />
                     </HBox>
                 </VBox>
@@ -149,6 +151,29 @@
                         </Tab>
 
                     </TabPane>
+                </VBox>
+            </Tab>
+
+            <!-- SUPPORT TAB -->
+            <Tab text="Support">
+                <VBox spacing="10" style="-fx-padding: 15;">
+                    <Label text="Technical support" style="-fx-font-weight: bold; -fx-font-size: 14;" />
+                    <Label text="Messages go to the same queue as web customers/drivers. Admins reply from the Support tab." style="-fx-text-fill: #555;" wrapText="true" />
+                    <TableView fx:id="supportTicketsTable" prefHeight="260" VBox.vgrow="ALWAYS">
+                        <columns>
+                            <TableColumn fx:id="colSupTicketId" prefWidth="50" text="ID" />
+                            <TableColumn fx:id="colSupTicketStatus" prefWidth="90" text="Status" />
+                            <TableColumn fx:id="colSupTicketBody" prefWidth="260" text="Your message" />
+                            <TableColumn fx:id="colSupTicketTime" prefWidth="150" text="Sent" />
+                            <TableColumn fx:id="colSupTicketReply" prefWidth="260" text="Admin reply" />
+                        </columns>
+                    </TableView>
+                    <Label text="New request" style="-fx-font-weight: bold;" />
+                    <TextArea fx:id="supportNewBody" prefRowCount="3" wrapText="true" promptText="Describe your issue..." />
+                    <HBox spacing="10">
+                        <Button onAction="#handleSendSupportTicket" style="-fx-background-color: #27ae60; -fx-text-fill: white;" text="Send" />
+                        <Button onAction="#handleRefreshSupportTickets" text="Refresh" />
+                    </HBox>
                 </VBox>
             </Tab>
 

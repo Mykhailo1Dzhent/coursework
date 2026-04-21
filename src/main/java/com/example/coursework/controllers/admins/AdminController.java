@@ -16,49 +16,50 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.Comparator;
 
 public class AdminController {
 
     @FXML private TabPane tabPane;
 
-    // ---- USERS ----
+    //  USERS
     @FXML private TableView<ObservableList<String>> usersTable;
     @FXML private TableColumn<ObservableList<String>, String> colUserId, colUsername, colRole, colName, colSurname, colEmail;
     @FXML private TextField filterUsername, filterName, filterSurname, filterEmail;
     @FXML private ComboBox<String> filterRole;
 
-    // ---- RESTAURANTS ----
+    // RESTAURANTS
     @FXML private TableView<ObservableList<String>> restaurantsTable;
     @FXML private TableColumn<ObservableList<String>, String> colRestId, colRestName, colRestCuisine, colRestOwner, colRestOpening, colRestClosing;
     @FXML private TableView<ObservableList<String>> dishesTable;
     @FXML private TableColumn<ObservableList<String>, String> colDishId, colDishName, colDishDescription, colDishPrice;
     @FXML private Label dishesLabel;
 
-    // ---- ORDERS ----
+    // ORDERS
     @FXML private TableView<ObservableList<String>> ordersTable;
     @FXML private TableColumn<ObservableList<String>, String> colOrderId, colOrderCustomer, colOrderRestaurant, colOrderDriver, colOrderStatus, colOrderTime, colOrderPrice;
     @FXML private ComboBox<String> filterOrderStatus;
     @FXML private TextField filterOrderRestaurant, filterOrderCustomer;
     @FXML private DatePicker filterOrderDate;
 
-    // ---- MESSAGES ----
+    // MESSAGES
     @FXML private TableView<ObservableList<String>> messagesTable;
     @FXML private TableColumn<ObservableList<String>, String> colMessageId, colMessageOrder, colMessageSender, colMessageText, colMessageTime;
     @FXML private TableView<ObservableList<String>> notificationsTable;
     @FXML private TableColumn<ObservableList<String>, String> colNotifId, colNotifRecipient, colNotifTitle, colNotifMessage, colNotifTime, colNotifRead;
 
-    // ---- SUPPORT ----
+    // SUPPORT
     @FXML private TableView<ObservableList<String>> supportTable;
     @FXML private TableColumn<ObservableList<String>, String> colSupportId, colSupportUser, colSupportMessage, colSupportTime, colSupportStatus;
 
-    // ---- STATISTICS ----
+    // STATISTICS
     @FXML private Label statTotalUsers, statCustomers, statDrivers, statRestaurantOwners;
     @FXML private Label statRestaurants, statTotalOrders, statCompletedOrders, statPendingOrders;
 
     @FXML
     public void initialize() {
         filterRole.setItems(FXCollections.observableArrayList("ALL", "ADMIN", "RESTAURANT", "CUSTOMER", "DRIVER"));
-        filterOrderStatus.setItems(FXCollections.observableArrayList("ALL", "PENDING", "ACCEPTED", "IN_DELIVERY", "COMPLETED", "CANCELLED"));
+        filterOrderStatus.setItems(FXCollections.observableArrayList("ALL", "PENDING", "ACCEPTED", "READY", "IN_DELIVERY", "COMPLETED", "CANCELLED"));
 
         setupUsersTable();
         setupRestaurantsTable();
@@ -74,6 +75,7 @@ public class AdminController {
         loadOrders(null, null, null, null);
         loadMessages();
         loadStatistics();
+        loadSupportTickets();
 
         restaurantsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
@@ -85,7 +87,7 @@ public class AdminController {
         });
     }
 
-    // == USERS ==
+    // USERS
 
     private void setupUsersTable() {
         colUserId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
@@ -262,6 +264,8 @@ public class AdminController {
         colDishName.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(1)));
         colDishDescription.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
         colDishPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
+        colDishId.setComparator(Comparator.comparingInt(AdminController::parseSortInt));
+        colDishPrice.setComparator(Comparator.comparingDouble(AdminController::parseSortDouble));
     }
 
     private void loadDishes(String restaurantId) {
@@ -423,6 +427,8 @@ public class AdminController {
         colOrderStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
         colOrderTime.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(5)));
         colOrderPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(6)));
+        colOrderId.setComparator(Comparator.comparingInt(AdminController::parseSortInt));
+        colOrderPrice.setComparator(Comparator.comparingDouble(AdminController::parseSortDouble));
     }
 
     private void loadOrders(String status, String restaurant, String customer, LocalDate date) {
@@ -459,7 +465,29 @@ public class AdminController {
         loadOrders(null, null, null, null);
     }
 
-    @FXML private void handleAddOrder() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleAddOrder() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/com/example/coursework/admin_add_order_dialog.fxml"));
+            Parent root = loader.load();
+
+            AdminAddOrderController controller = loader.getController();
+            controller.setOnSuccess(() -> loadOrders(
+                    filterOrderStatus.getValue(),
+                    filterOrderRestaurant.getText(),
+                    filterOrderCustomer.getText(),
+                    filterOrderDate.getValue()
+            ));
+
+            Stage stage = new Stage();
+            stage.setTitle("New Order");
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @FXML private void handleRefreshOrders() { loadOrders(null, null, null, null); }
 
@@ -524,7 +552,39 @@ public class AdminController {
         }
     }
     @FXML private void handleRefreshMessages() { loadMessages(); }
-    @FXML private void handleEditMessage() { showInfo("Edit Message", "Feature coming soon."); }
+    @FXML private void handleEditMessage() {
+        ObservableList<String> selected = messagesTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showInfo("Edit Message", "Please select a message first.");
+            return;
+        }
+        int messageId = Integer.parseInt(selected.get(0));
+        String current = selected.get(3) != null ? selected.get(3) : "";
+        TextInputDialog dialog = new TextInputDialog(current);
+        dialog.setTitle("Edit message");
+        dialog.setHeaderText("Message #" + messageId);
+        dialog.setContentText("Text:");
+        dialog.showAndWait().ifPresent(text -> {
+            if (text == null) return;
+            String t = text.trim();
+            if (t.isEmpty()) {
+                showInfo("Edit Message", "Message cannot be empty.");
+                return;
+            }
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "UPDATE messages SET message = ?, text = ? WHERE id = ?")) {
+                stmt.setString(1, t);
+                stmt.setString(2, t);
+                stmt.setInt(3, messageId);
+                stmt.executeUpdate();
+                loadMessages();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showInfo("Edit Message", "Error: " + e.getMessage());
+            }
+        });
+    }
 
     @FXML private void handleDeleteMessage() {
         ObservableList<String> selected = messagesTable.getSelectionModel().getSelectedItem();
@@ -621,9 +681,74 @@ public class AdminController {
         colSupportStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
     }
 
-    @FXML private void handleRefreshSupport() { showInfo("Support", "No support messages yet."); }
-    @FXML private void handleSupportReply() { showInfo("Reply", "Feature coming soon."); }
-    @FXML private void handleSupportDelete() { showInfo("Delete", "Feature coming soon."); }
+    private void loadSupportTickets() {
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        String sql = "SELECT t.id, u.username, t.body, t.created_at, t.status, COALESCE(t.admin_reply, '') AS admin_reply " +
+                "FROM support_tickets t JOIN users u ON t.user_id = u.id ORDER BY t.created_at DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                ObservableList<String> row = FXCollections.observableArrayList();
+                row.add(rs.getString("id"));
+                row.add(rs.getString("username"));
+                row.add(rs.getString("body"));
+                row.add(rs.getString("created_at"));
+                row.add(rs.getString("status"));
+                row.add(rs.getString("admin_reply"));
+                data.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        supportTable.setItems(data);
+    }
+
+    @FXML private void handleRefreshSupport() { loadSupportTickets(); }
+
+    @FXML private void handleSupportReply() {
+        ObservableList<String> selected = supportTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showInfo("Reply", "Please select a ticket first.");
+            return;
+        }
+        TextInputDialog dialog = new TextInputDialog(selected.size() > 5 ? selected.get(5) : "");
+        dialog.setTitle("Support reply");
+        dialog.setHeaderText("Ticket #" + selected.get(0) + " — " + selected.get(1));
+        dialog.setContentText("Message to user:");
+        dialog.showAndWait().ifPresent(text -> {
+            if (text == null || text.isBlank()) return;
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement(
+                         "UPDATE support_tickets SET admin_reply = ?, status = 'ANSWERED', replied_at = NOW() WHERE id = ?")) {
+                stmt.setString(1, text.trim());
+                stmt.setInt(2, Integer.parseInt(selected.get(0)));
+                stmt.executeUpdate();
+                loadSupportTickets();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showInfo("Reply", "Could not save reply. Did you run support_tickets.sql?");
+            }
+        });
+    }
+
+    @FXML private void handleSupportDelete() {
+        ObservableList<String> selected = supportTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showInfo("Delete", "Please select a ticket first.");
+            return;
+        }
+        confirm("Delete support ticket #" + selected.get(0) + "?", () -> {
+            try (Connection conn = DatabaseConnection.getConnection();
+                 PreparedStatement stmt = conn.prepareStatement("DELETE FROM support_tickets WHERE id = ?")) {
+                stmt.setInt(1, Integer.parseInt(selected.get(0)));
+                stmt.executeUpdate();
+                loadSupportTickets();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+    }
 
     // == STATISTICS ==
 
@@ -663,6 +788,24 @@ public class AdminController {
     @FXML private void handleRefreshStatistics() { loadStatistics(); }
 
     // == HELPERS ==
+
+    private static int parseSortInt(String s) {
+        if (s == null || s.isBlank()) return 0;
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static double parseSortDouble(String s) {
+        if (s == null || s.isBlank()) return 0;
+        try {
+            return Double.parseDouble(s.trim().replace(',', '.'));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
 
     private void showInfo(String title, String message) {
         new Alert(Alert.AlertType.INFORMATION, message).showAndWait();

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox spacing="12" style="-fx-padding: 20;" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="com.example.coursework.controllers.restaurants.RestaurantOrderItemsController">
+
+    <Label fx:id="labelOrder" style="-fx-font-size: 16; -fx-font-weight: bold;" text="Order"/>
+
+    <Label text="Remove lines to recalculate order total. Not allowed after a driver has claimed the order."
+           wrapText="true" style="-fx-text-fill: #555;"/>
+
+    <TableView fx:id="linesTable" prefHeight="280" prefWidth="520">
+        <columns>
+            <TableColumn fx:id="colLineId" prefWidth="50" text="ID"/>
+            <TableColumn fx:id="colLineName" prefWidth="200" text="Dish"/>
+            <TableColumn fx:id="colLineQty" prefWidth="60" text="Qty"/>
+            <TableColumn fx:id="colLineUnit" prefWidth="90" text="Unit €"/>
+            <TableColumn fx:id="colLineTotal" prefWidth="90" text="Line €"/>
+        </columns>
+    </TableView>
+
+    <Label fx:id="hintLabel" style="-fx-text-fill: #c0392b;"/>
+
+    <HBox spacing="10">
+        <Button text="Remove selected line" onAction="#handleRemoveSelected"
+                style="-fx-background-color: #e74c3c; -fx-text-fill: white;"/>
+        <Button text="Close" onAction="#handleClose"/>
+    </HBox>
+</VBox>

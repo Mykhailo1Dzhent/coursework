@@ -17,28 +17,29 @@ import javafx.stage.Stage;
 import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 
 public class RestaurantController {
 
     private User currentUser;
     private int restaurantId = -1;
 
-    // ---- INFO ----
+    // INFO
     @FXML private TextField infoName, infoCuisine, infoOpening, infoClosing;
     @FXML private Label infoMessage;
 
-    // ---- MENU ITEMS ----
+    //  MENU ITEMS
     @FXML private TableView<ObservableList<String>> dishesTable;
     @FXML private TableColumn<ObservableList<String>, String> colDishId, colDishName, colDishDescription, colDishPrice;
 
-    // ---- ORDERS ----
+    //  ORDERS
     @FXML private TableView<ObservableList<String>> ordersTable;
-    @FXML private TableColumn<ObservableList<String>, String> colOrderId, colOrderCustomer, colOrderDriver, colOrderStatus, colOrderTime, colOrderPrice;
+    @FXML private TableColumn<ObservableList<String>, String> colOrderId, colOrderCustomer, colOrderDriver, colOrderStatus, colOrderTime, colOrderItems, colOrderPrice;
     @FXML private ComboBox<String> filterOrderStatus;
     @FXML private TextField filterOrderCustomer;
     @FXML private DatePicker filterOrderDate;
 
-    // ---- MESSAGES ----
+    //  MESSAGES
     @FXML private TableView<ObservableList<String>> messagesTable;
     @FXML private TableColumn<ObservableList<String>, String> colMessageId, colMessageOrder, colMessageSender, colMessageText, colMessageTime;
 
@@ -46,9 +47,14 @@ public class RestaurantController {
     @FXML private TableColumn<ObservableList<String>, String> colNotifId, colNotifTitle, colNotifMessage, colNotifTime, colNotifRead;
 
 
-    // ---- STATISTICS ----
+    //  STATISTICS
     @FXML private Label statTotalOrders, statCompletedOrders, statPendingOrders;
     @FXML private Label statRevenue, statAvgOrder, statMenuItems, statPopularDish;
+
+    //  SUPPORT
+    @FXML private TableView<ObservableList<String>> supportTicketsTable;
+    @FXML private TableColumn<ObservableList<String>, String> colSupTicketId, colSupTicketStatus, colSupTicketBody, colSupTicketTime, colSupTicketReply;
+    @FXML private TextArea supportNewBody;
 
     public void setUser(User user) {
         this.currentUser = user;
@@ -70,11 +76,12 @@ public class RestaurantController {
 
     private void initializeData() {
         filterOrderStatus.setItems(FXCollections.observableArrayList(
-                "ALL", "PENDING", "ACCEPTED", "IN_DELIVERY", "COMPLETED", "CANCELLED"
+                "ALL", "PENDING", "ACCEPTED", "READY", "IN_DELIVERY", "COMPLETED", "CANCELLED"
         ));
 
         setupDishesTable();
         setupOrdersTable();
+        setupSupportTicketsTable();
         setupMessagesTable();
         setupNotificationsTable();
         loadNotifications();
@@ -83,6 +90,7 @@ public class RestaurantController {
         loadOrders(null, null, null);
         loadMessages();
         loadStatistics();
+        loadSupportTickets();
     }
 
     // == INFO ==
@@ -138,6 +146,8 @@ public class RestaurantController {
         colDishName.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(1)));
         colDishDescription.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
         colDishPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
+        colDishId.setComparator(Comparator.comparingInt(RestaurantController::parseSortInt));
+        colDishPrice.setComparator(Comparator.comparingDouble(RestaurantController::parseSortDouble));
     }
 
     private void loadDishes() {
@@ -226,14 +236,80 @@ public class RestaurantController {
         colOrderDriver.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
         colOrderStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
         colOrderTime.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
-        colOrderPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(5)));
+        colOrderItems.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(5)));
+        colOrderPrice.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(6)));
+        colOrderId.setComparator(Comparator.comparingInt(RestaurantController::parseSortInt));
+        colOrderPrice.setComparator(Comparator.comparingDouble(RestaurantController::parseSortDouble));
+    }
+
+    private void setupSupportTicketsTable() {
+        colSupTicketId.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(0)));
+        colSupTicketStatus.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(1)));
+        colSupTicketBody.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(2)));
+        colSupTicketTime.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(3)));
+        colSupTicketReply.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().get(4)));
+        colSupTicketId.setComparator(Comparator.comparingInt(RestaurantController::parseSortInt));
+    }
+
+    private void loadSupportTickets() {
+        ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
+        if (currentUser == null) return;
+        String sql = "SELECT id, status, body, created_at, COALESCE(admin_reply, '') AS admin_reply FROM support_tickets WHERE user_id = ? ORDER BY created_at DESC";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, currentUser.getId());
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                ObservableList<String> row = FXCollections.observableArrayList();
+                row.add(rs.getString("id"));
+                row.add(rs.getString("status"));
+                row.add(rs.getString("body"));
+                row.add(rs.getString("created_at"));
+                row.add(rs.getString("admin_reply"));
+                data.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        if (supportTicketsTable != null) {
+            supportTicketsTable.setItems(data);
+        }
+    }
+
+    @FXML private void handleRefreshSupportTickets() {
+        loadSupportTickets();
+    }
+
+    @FXML private void handleSendSupportTicket() {
+        if (currentUser == null) return;
+        String body = supportNewBody != null ? supportNewBody.getText() : null;
+        if (body == null || body.isBlank()) {
+            showInfo("Support", "Please enter a message.");
+            return;
+        }
+        String sql = "INSERT INTO support_tickets (user_id, body, status) VALUES (?, ?, 'OPEN')";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, currentUser.getId());
+            stmt.setString(2, body.trim());
+            stmt.executeUpdate();
+            supportNewBody.clear();
+            loadSupportTickets();
+            showInfo("Support", "Your message was sent.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Support", "Could not send. Create table support_tickets (see sql/support_tickets.sql).");
+        }
     }
 
     private void loadOrders(String status, String customer, LocalDate date) {
         if (restaurantId == -1) return;
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
         StringBuilder sql = new StringBuilder(
-                "SELECT o.id, cu.username, dr.username, o.status, o.order_time, o.total_price " +
+                "SELECT o.id, cu.username, dr.username, o.status, o.order_time, " +
+                        "COALESCE((SELECT GROUP_CONCAT(CONCAT(m.name, ' ×', CAST(oi.quantity AS CHAR)) ORDER BY m.name SEPARATOR ', ') " +
+                        "FROM order_items oi JOIN menu_items m ON oi.menu_item_id = m.id WHERE oi.order_id = o.id), '') AS items_summary, " +
+                        "o.total_price " +
                         "FROM orders o " +
                         "LEFT JOIN users cu ON o.customer_id = cu.id " +
                         "LEFT JOIN users dr ON o.driver_id = dr.id " +
@@ -249,7 +325,7 @@ public class RestaurantController {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ObservableList<String> row = FXCollections.observableArrayList();
-                for (int i = 1; i <= 6; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
+                for (int i = 1; i <= 7; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
                 data.add(row);
             }
         } catch (Exception e) { e.printStackTrace(); }
@@ -264,6 +340,46 @@ public class RestaurantController {
         loadOrders(null, null, null);
     }
     @FXML private void handleRefreshOrders() { loadOrders(null, null, null); }
+
+    @FXML private void handleEditOrderItems() {
+        if (restaurantId == -1) return;
+        ObservableList<String> selected = ordersTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showInfo("Order items", "Please select an order first.");
+            return;
+        }
+        int orderId = Integer.parseInt(selected.get(0));
+        String driver = selected.get(2) != null ? selected.get(2).trim() : "";
+        if (!driver.isEmpty()) {
+            showInfo("Order items", "Cannot change order items after a driver has claimed the order.");
+            return;
+        }
+        String status = selected.get(3) != null ? selected.get(3).trim() : "";
+        if ("COMPLETED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)
+                || "IN_DELIVERY".equalsIgnoreCase(status)) {
+            showInfo("Order items", "Cannot change items for orders in this status.");
+            return;
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(
+                    "/com/example/coursework/restaurant_order_items_dialog.fxml"));
+            Parent root = loader.load();
+            RestaurantOrderItemsController controller = loader.getController();
+            controller.setContext(orderId, restaurantId, () -> {
+                loadOrders(filterOrderStatus.getValue(), filterOrderCustomer.getText(), filterOrderDate.getValue());
+                loadStatistics();
+            });
+            Stage stage = new Stage();
+            stage.setTitle("Order lines — #" + orderId);
+            stage.initModality(Modality.APPLICATION_MODAL);
+            stage.setScene(new Scene(root));
+            stage.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            showInfo("Order items", "Error opening dialog: " + e.getMessage());
+        }
+    }
+
     @FXML private void handleAcceptOrder() {
         ObservableList<String> selected = ordersTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showInfo("Accept Order", "Please select an order first."); return; }
@@ -307,10 +423,7 @@ public class RestaurantController {
         int orderId = Integer.parseInt(selected.get(0));
         String currentStatus = selected.get(3);
 
-        ChoiceDialog<String> dialog = new ChoiceDialog<>(
-                "READY",
-                "READY", "CANCELLED"
-        );
+        ChoiceDialog<String> dialog = new ChoiceDialog<>("READY", "READY", "CANCELLED");
         dialog.setTitle("Change Order Status");
         dialog.setHeaderText("Order #" + orderId + " (current: " + currentStatus + ")");
         dialog.setContentText("Select action:");
@@ -318,11 +431,19 @@ public class RestaurantController {
         dialog.showAndWait().ifPresent(choice -> {
             try (Connection conn = DatabaseConnection.getConnection()) {
                 if ("READY".equals(choice)) {
-                    // Keep status ACCEPTED, but allow a restaurant to confirm cooking is finished
-                    // Only meaningful if order was accepted and not yet in delivery/completed.
                     if (!"ACCEPTED".equalsIgnoreCase(currentStatus)) {
                         showInfo("Ready", "Order must be ACCEPTED before marking it ready.");
                         return;
+                    }
+                    try (PreparedStatement stmt = conn.prepareStatement(
+                            "UPDATE orders SET status = 'READY' WHERE id = ? AND restaurant_id = ? AND status = 'ACCEPTED'")) {
+                        stmt.setInt(1, orderId);
+                        stmt.setInt(2, restaurantId);
+                        int updated = stmt.executeUpdate();
+                        if (updated == 0) {
+                            showInfo("Ready", "Order could not be marked READY (maybe already updated).");
+                            return;
+                        }
                     }
                     insertSystemMessage(conn, orderId, "🍳 Order is ready for pickup.");
                 } else if ("CANCELLED".equals(choice)) {
@@ -366,7 +487,7 @@ public class RestaurantController {
     private void loadMessages() {
         if (restaurantId == -1) return;
         ObservableList<ObservableList<String>> data = FXCollections.observableArrayList();
-        String sql = "SELECT m.id, m.order_id, u.username, m.message, m.sent_at " +
+        String sql = "SELECT m.id, m.order_id, u.username, m.message, m.sent_at, m.sender_id " +
                 "FROM messages m " +
                 "LEFT JOIN users u ON m.sender_id = u.id " +
                 "LEFT JOIN orders o ON m.order_id = o.id " +
@@ -377,7 +498,7 @@ public class RestaurantController {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ObservableList<String> row = FXCollections.observableArrayList();
-                for (int i = 1; i <= 5; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
+                for (int i = 1; i <= 6; i++) row.add(rs.getString(i) != null ? rs.getString(i) : "");
                 data.add(row);
             }
         } catch (Exception e) { e.printStackTrace(); }
@@ -409,6 +530,12 @@ public class RestaurantController {
         ObservableList<String> selected = messagesTable.getSelectionModel().getSelectedItem();
         if (selected == null) { showInfo("Edit Message", "Please select a message first."); return; }
 
+        String senderIdStr = selected.size() > 5 && selected.get(5) != null ? selected.get(5).trim() : "";
+        if (!senderIdStr.equals(String.valueOf(currentUser.getId()))) {
+            showInfo("Edit Message", "You can only edit your own messages.");
+            return;
+        }
+
         int messageId = Integer.parseInt(selected.get(0));
         int orderId   = Integer.parseInt(selected.get(1));
         String text   = selected.get(3);
@@ -438,7 +565,6 @@ public class RestaurantController {
 
         int messageId = Integer.parseInt(selected.get(0));
         confirm("Delete this message?", () -> {
-            // Удаляем только своё сообщение
             String sql = "DELETE FROM messages WHERE id = ? AND sender_id = ?";
             try (Connection conn = DatabaseConnection.getConnection();
                  PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -550,6 +676,24 @@ public class RestaurantController {
 
     // == HELPERS ==
 
+    private static int parseSortInt(String s) {
+        if (s == null || s.isBlank()) return 0;
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private static double parseSortDouble(String s) {
+        if (s == null || s.isBlank()) return 0;
+        try {
+            return Double.parseDouble(s.trim().replace(',', '.'));
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
     private void showInfo(String title, String message) {
         new Alert(Alert.AlertType.INFORMATION, message).showAndWait();
     }
@@ -561,8 +705,6 @@ public class RestaurantController {
     }
 
     private void insertSystemMessage(Connection conn, int orderId, String message) throws SQLException {
-        // Uses same schema as the desktop messaging: messages(order_id, sender_id, message[, sent_at])
-        // Some DB schemas also have a NOT NULL `text` column (legacy). Fill it too.
         String sql = "INSERT INTO messages (order_id, sender_id, message, text, sent_at) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, orderId);

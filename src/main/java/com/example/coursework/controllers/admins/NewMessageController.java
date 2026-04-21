@@ -23,7 +23,6 @@ public class NewMessageController {
     private Runnable onSuccess;
     private Integer selectedUserId = null; // null = группа
 
-    // username -> user_id для результатов поиска
     private Map<String, Integer> searchMap = new HashMap<>();
 
     public void setOnSuccess(Runnable callback) {
@@ -36,7 +35,6 @@ public class NewMessageController {
                 "All Restaurant Owners"
         ));
 
-        // При выборе группы — сбрасываем выбранного юзера
         fieldGroup.setOnAction(e -> {
             selectedUserId = null;
             searchResults.getItems().clear();
@@ -46,7 +44,6 @@ public class NewMessageController {
             }
         });
 
-        // Поиск по username при вводе
         fieldSearch.textProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal.isBlank()) {
                 searchResults.getItems().clear();
@@ -56,7 +53,6 @@ public class NewMessageController {
             searchUsers(newVal.trim());
         });
 
-        // Выбор юзера из списка
         searchResults.setOnMouseClicked(e -> {
             String selected = searchResults.getSelectionModel().getSelectedItem();
             if (selected != null) {
@@ -94,7 +90,6 @@ public class NewMessageController {
 
         try (Connection conn = DatabaseConnection.getConnection()) {
             if (selectedUserId != null) {
-                // Конкретный юзер
                 String sql = "INSERT INTO admin_notifications (recipient_id, recipient_type, title, message) VALUES (?, NULL, ?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, selectedUserId);
@@ -103,7 +98,6 @@ public class NewMessageController {
                     stmt.executeUpdate();
                 }
             } else {
-                // Группа — одна строка
                 String sql = "INSERT INTO admin_notifications (recipient_id, recipient_type, title, message) VALUES (NULL, ?, ?, ?)";
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, "ALL_RESTAURANTS");
